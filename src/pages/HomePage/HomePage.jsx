@@ -9,12 +9,25 @@ import {
   QuestionCircleOutlined,
   CaretDownOutlined,
 } from '@ant-design/icons';
+import {
+  adsBalance,
+  Popularsubchain,
+} from '../../api/request_data/overall_request';
 export default function HomePage() {
+  //页数
+  const [page, setPage] = useState(1);
   const [titledj, setTitledj] = useState(0);
   //时间排序
   const [timepx, setTimepx] = useState(0);
   //价值排序
   const [pricepx, setPricepx] = useState(0);
+  //热门子链
+  const [popularsubchaindata, setPopularsubchaindata] = useState({});
+  //MY子链
+  const [mypopularsubchaindata, setMypopularsubchaindata] = useState({});
+  //MetaMaskAddress
+  const [metamaskaddress, setMetamaskaddress] = useState();
+  const [loginstatus, setLoginstatus] = useState(false);
   const content = (
     <div className={HomePage_ls.tablecontent}>
       <p>
@@ -32,10 +45,32 @@ export default function HomePage() {
       value: 'Running',
       label: 'Running',
     },
+    {
+      value: 'All',
+      label: 'All',
+    },
+  ];
+  const myoptionsstate = [
+    {
+      value: 'Need Deployment',
+      label: 'Need Deployment',
+    },
+    {
+      value: 'Running',
+      label: 'Running',
+    },
+    {
+      value: 'Need Starting',
+      label: 'Need Starting',
+    },
+    {
+      value: 'All',
+      label: 'All',
+    },
   ];
   const Hotcolumns = [
     {
-      title: 'Id',
+      title: 'Chain id',
       dataIndex: 'id',
       key: 'id',
       render: (text) => <span>{text}</span>,
@@ -43,21 +78,23 @@ export default function HomePage() {
       width: '160px',
     },
     {
-      title: 'Chains',
-      dataIndex: 'chains',
-      key: 'chains',
+      title: 'Chain name',
+      dataIndex: 'name',
+      key: 'name',
       align: 'center',
-      render: (text) => (
+      render: (text, data) => (
         <div className={HomePage_ls.tablechains}>
-          <div className={HomePage_ls.tablechains_img}></div>
-          <span>text</span>
+          <div className={HomePage_ls.tablechains_img}>
+            <img src={data.icon_path} />
+          </div>
+          <span>{text}</span>
         </div>
       ),
     },
     {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address',
+      title: 'Chain address',
+      dataIndex: 'user',
+      key: 'user',
       align: 'center',
       render: (text) => <span>{ellipsisfour(text)}</span>,
     },
@@ -78,28 +115,13 @@ export default function HomePage() {
           <span>Time</span>
         </div>
       ),
-      dataIndex: 'time',
-      key: 'time',
+      dataIndex: 'create_time',
+      key: 'create_time',
       align: 'center',
       render: (text) => <span>{text}</span>,
     },
     {
-      title: (
-        <div className={HomePage_ls.tableprice}>
-          {pricepx == 0 ? (
-            <ArrowUpOutlined
-              style={{ color: '#5CC728' }}
-              onClick={tablesortprice.bind(this, 1)}
-            />
-          ) : (
-            <ArrowDownOutlined
-              style={{ color: '#F63C47' }}
-              onClick={tablesortprice.bind(this, 0)}
-            />
-          )}
-          <span>Price</span>
-        </div>
-      ),
+      title: 'Price',
       dataIndex: 'price',
       key: 'price',
       align: 'center',
@@ -128,31 +150,26 @@ export default function HomePage() {
           </Cascader>
         </div>
       ),
-      dataIndex: 'state',
-      key: 'state',
+      dataIndex: 'status',
+      key: 'status',
       align: 'center',
-      render: (text) => (
-        <div className={HomePage_ls.tablestate}>
-          <div className={HomePage_ls.tablestate_y1}></div>
-          <span>{text}</span>
-        </div>
-      ),
-    },
-  ];
-  const Hotdata = [
-    {
-      id: 1,
-      chains: 'name',
-      address: '0x5530000000000000000000000616',
-      time: '1675783941',
-      price: '50000',
-      volume: '$50000M',
-      state: 'Need Deployment',
+      render: (text) =>
+        text == 0 ? (
+          <div className={HomePage_ls.tablestate}>
+            <div className={HomePage_ls.tablestate_y1}></div>
+            <Link to={{ pathname: '/Details', state: 4 }}>Need Deployment</Link>
+          </div>
+        ) : (
+          <div className={HomePage_ls.tablestate}>
+            <div className={HomePage_ls.tablestate_y2}></div>
+            <Link to={{ pathname: '/Details', state: 5 }}>Running</Link>
+          </div>
+        ),
     },
   ];
   const Mycolumns = [
     {
-      title: 'Id',
+      title: 'Chain id',
       dataIndex: 'id',
       key: 'id',
       render: (text) => <span>{text}</span>,
@@ -160,7 +177,7 @@ export default function HomePage() {
       width: '160px',
     },
     {
-      title: 'Chains',
+      title: 'Chain name',
       dataIndex: 'chains',
       key: 'chains',
       align: 'center',
@@ -172,7 +189,7 @@ export default function HomePage() {
       ),
     },
     {
-      title: 'Address',
+      title: 'Chain address',
       dataIndex: 'address',
       key: 'address',
       align: 'center',
@@ -201,22 +218,7 @@ export default function HomePage() {
       render: (text) => <span>{text}</span>,
     },
     {
-      title: (
-        <div className={HomePage_ls.tableprice}>
-          {pricepx == 0 ? (
-            <ArrowUpOutlined
-              style={{ color: '#5CC728' }}
-              onClick={tablesortprice.bind(this, 1)}
-            />
-          ) : (
-            <ArrowDownOutlined
-              style={{ color: '#F63C47' }}
-              onClick={tablesortprice.bind(this, 0)}
-            />
-          )}
-          <span>Price</span>
-        </div>
-      ),
+      title: 'Price',
       dataIndex: 'price',
       key: 'price',
       align: 'center',
@@ -240,7 +242,7 @@ export default function HomePage() {
       title: (
         <div className={HomePage_ls.tableState}>
           <span>State</span>
-          <Cascader options={optionsstate} onChange={stateonChange}>
+          <Cascader options={myoptionsstate} onChange={stateonChange}>
             <CaretDownOutlined className={HomePage_ls.tableState_icon} />
           </Cascader>
         </div>
@@ -302,6 +304,54 @@ export default function HomePage() {
       state: 'Running',
     },
   ];
+  let hotpaging = {
+    page: page,
+    flag: 'create_time',
+    order: 2,
+    user: '',
+    status: '',
+  };
+  let mypaging = {
+    page: page,
+    flag: 'create_time',
+    order: 2,
+    user: metamaskaddress || localStorage.getItem('MetaMaskAddress'),
+    status: '',
+  };
+  //热门子链查询
+  const Popularsubchain_q = async (item) => {
+    const data = await Popularsubchain(item);
+    console.log('热门子链查询');
+    console.log(data);
+    if (data) {
+      setPopularsubchaindata(data);
+    }
+  };
+  //my子链查询
+  const myPopularsubchain_q = async (item) => {
+    const data = await Popularsubchain(item);
+    console.log('my子链查询');
+    console.log(data);
+    if (data) {
+      setMypopularsubchaindata(data);
+    }
+  };
+  useEffect(() => {
+    PubSub.subscribe('Allloginstatus', (msg, index) => {
+      setLoginstatus(index);
+    });
+    Popularsubchain_q(hotpaging);
+    myPopularsubchain_q(mypaging);
+    PubSub.subscribe('MetaMaskAddress', (msg, index) => {
+      setMetamaskaddress(index);
+    });
+  }, []);
+  useEffect(() => {
+    if (popularsubchaindata) {
+      console.log(popularsubchaindata);
+    }
+  }, [popularsubchaindata]);
+  useEffect(() => {}, [page]);
   // 头部热门切换
   function titleonclick(data) {
     setTitledj(data);
@@ -309,10 +359,21 @@ export default function HomePage() {
   //页码变化
   function pageonchange(data) {
     console.log(data);
+    setPage(data);
   }
   //时间排序
   function tablesorttime(data) {
     setTimepx(data);
+    console.log(data);
+    if (data == 0) {
+      hotpaging.flag = 'create_time';
+      hotpaging.order = 2;
+      Popularsubchain_q(hotpaging);
+    } else {
+      hotpaging.flag = 'create_time';
+      hotpaging.order = 1;
+      Popularsubchain_q(hotpaging);
+    }
   }
   //价值排序
   function tablesortprice(data) {
@@ -320,50 +381,66 @@ export default function HomePage() {
   }
   //状态筛选
   function stateonChange(data) {
-    console.log(data);
+    console.log(data[0]);
+    if (data[0] == 'Running') {
+      hotpaging.status = 1;
+    } else if (data[0] == 'Need Deployment') {
+      hotpaging.status = 0;
+    } else if (data[0] == 'Need Starting') {
+      hotpaging.status = 2;
+    } else {
+      hotpaging.status = '';
+    }
+    Popularsubchain_q(hotpaging);
   }
   return (
     <>
       <div className={HomePage_ls.HomePageBox}>
         <div className={HomePage_ls.HomePage_center}>
           {/* 热门 */}
-          <div className={HomePage_ls.HomePage_titleBox}>
-            <div
-              className={
-                titledj == 0
-                  ? HomePage_ls.HomePage_titlePopular
-                  : HomePage_ls.HomePage_titleMy
-              }
-              onClick={titleonclick.bind(this, 0)}
-            >
-              Popular Chain
+          {loginstatus == true ? (
+            <div className={HomePage_ls.HomePage_titleBox}>
+              <div
+                className={
+                  titledj == 0
+                    ? HomePage_ls.HomePage_titlePopular
+                    : HomePage_ls.HomePage_titleMy
+                }
+                onClick={titleonclick.bind(this, 0)}
+              >
+                Popular Chain
+              </div>
+              <div
+                className={
+                  titledj == 0
+                    ? HomePage_ls.HomePage_titleMy
+                    : HomePage_ls.HomePage_titlePopular
+                }
+                onClick={titleonclick.bind(this, 1)}
+              >
+                My Chain
+              </div>
             </div>
-            <div
-              className={
-                titledj == 0
-                  ? HomePage_ls.HomePage_titleMy
-                  : HomePage_ls.HomePage_titlePopular
-              }
-              onClick={titleonclick.bind(this, 1)}
-            >
-              My Chain
-            </div>
-          </div>
+          ) : (
+            ''
+          )}
+
           {/* 表格 */}
           {titledj == 0 ? (
             <div className={HomePage_ls.tableBox} id="HomePageTable">
               <Table
                 className={HomePage_ls.table}
                 columns={Hotcolumns}
-                dataSource={Hotdata}
+                dataSource={popularsubchaindata.data}
                 pagination={false}
               />
               <Pagination
                 className={HomePage_ls.page}
                 defaultPageSize={8}
-                total={500}
+                total={popularsubchaindata.total}
                 showSizeChanger={false}
                 onChange={pageonchange}
+                defaultCurrent={1}
               />
             </div>
           ) : (
@@ -385,7 +462,12 @@ export default function HomePage() {
           )}
 
           {/* 创建子链 */}
-          <div className={HomePage_ls.establish}>Create Blockchain</div>
+          <Link
+            className={HomePage_ls.establish}
+            to={{ pathname: '/Submit', state: '' }}
+          >
+            Create Blockchain
+          </Link>
           <p className={HomePage_ls.describe}>
             The advantages of creating a sub-chain: open their own blockchain
             with one key, participate in consensus, and achieve win-win results

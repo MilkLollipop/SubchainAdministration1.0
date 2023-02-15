@@ -25,9 +25,10 @@
   text-decoration: underline;
 }
 .titleBasic {
+  width: 1134px;
   font-size: 20px;
   color: #15051b;
-  margin-top: 37px;
+  margin: 37px auto 0;
   font-weight: 500;
 }
 .textBox {
@@ -67,7 +68,7 @@
 .textBox_data {
   width: 1134px;
   border-top: 1px solid #e9e9e9;
-  margin-top: 30px;
+  margin: 30px auto 0;
   padding-top: 27px;
 }
 .textBox_data_titlebox {
@@ -80,13 +81,16 @@
     color: #15051b;
   }
   div {
-    width: 1071px;
+    width: 1050px;
     height: 62px;
     background: #fbf5ff;
     border-radius: 5px 5px 5px 5px;
     opacity: 1;
-    padding: 10px 34px;
+    padding: 10px 10px;
     color: #15051b;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
   }
 }
 .textBox_data_informationbox {
@@ -107,7 +111,7 @@
   }
 }
 .download {
-  width: 100px;
+  width: 80px;
   height: 26px;
   background-color: #9322d9;
   border-radius: 5px;
@@ -125,7 +129,7 @@
   background-color: #861bc8;
 }
 .copy {
-  width: 76px;
+  width: 50px;
   height: 26px;
   background-color: #a9a9a9;
   border-radius: 5px;
@@ -166,7 +170,8 @@
   }
 }
 .content {
-  height: 20px;
+  // height: 20px;
+  margin: 0;
 }
 .textBox_data_informationbox_h3 {
   display: flex;
@@ -183,16 +188,44 @@
 .textBox_data_informationbox_h3_data {
   width: 406px;
   height: 32px;
-  background-color: #f0f2f5;
   margin-left: 30px;
   font-size: 14px;
-  color: #a9a9a9;
-  padding: 0 12px;
+  color: #15051b;
   line-height: 32px;
+  span {
+    color: #8f8f8f;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+  .textBox_data_informationbox_h3_data_input {
+    width: 406px;
+    height: 32px;
+    background-color: #f0f2f5;
+    font-size: 14px;
+    line-height: 32px;
+    padding: 0 12px;
+    color: #a9a9a9;
+    border: 0;
+    &:focus {
+      border: none;
+      outline: none;
+    }
+    outline-color: invert;
+    outline-style: none;
+    outline-width: 0px;
+    border: none;
+    border-style: none;
+    text-shadow: none;
+    -webkit-appearance: none;
+    -webkit-user-select: text;
+    outline-color: transparent;
+    box-shadow: none;
+  }
 }
 .button {
   width: 291px;
   height: 38px;
+  display: block;
   background-color: #9322d9;
   font-size: 14px;
   text-align: center;
@@ -200,5 +233,52 @@
   border-radius: 5px;
   margin: auto;
   color: #ffffff;
+  text-decoration: none;
   cursor: pointer;
+}
+.databox {
+  width: 687px;
+  height: 335px;
+  border: 1px solid #d9d9d9;
+  border-radius: 5px;
+  margin: -30px 0 30px;
+  overflow: auto;
+}
+.textBox_data_informationbox_h3_data4 {
+  width: 406px;
+  height: 32px;
+  background-color: #ffffff;
+  margin-left: 30px;
+  font-size: 14px;
+  color: #a9a9a9;
+  padding: 0 12px;
+  line-height: 32px;
+}
+.tstk {
+  font-size: 50px;
+  color: #9322d9;
+  margin-bottom: 20px;
+}
+.tstkbutton {
+  width: 153px;
+  height: 38px;
+  background-color: #9322d9;
+  border-radius: 5px;
+  margin: auto;
+  line-height: 38px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  display: block;
+}
+.tstkbutton:hover {
+  color: #ffffff;
+}
+:global {
+  .ant-modal-content {
+    text-align: center !important;
+  }
+  .ant-modal-body {
+    margin: auto !important;
+  }
 }

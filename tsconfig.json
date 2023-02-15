@@ -27,7 +27,7 @@
     "node_modules",
     "lib",
     "es",
-    "dist",
+    "subchainhainhain",
     "typings",
     "**/__test__",
     "test",

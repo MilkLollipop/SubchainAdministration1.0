@@ -39,6 +39,7 @@
   height: 617px;
   background-color: #ffffff;
   margin-top: 25px;
+  box-shadow: 0px 0px 50px 20px #eceef5;
 }
 .page {
   text-align: center;
@@ -48,6 +49,7 @@
   height: 495px;
 }
 .establish {
+  display: block;
   width: 634px;
   height: 86px;
   border-radius: 10px;
@@ -57,7 +59,11 @@
   color: #ffffff;
   line-height: 86px;
   text-align: center;
+  text-decoration: none;
   cursor: pointer;
+}
+.establish:hover {
+  color: #ffffff;
 }
 .describe {
   font-size: 16px;
@@ -72,7 +78,12 @@
   .tablechains_img {
     width: 26px;
     height: 26px;
-    background-color: orange;
+    border-radius: 50%;
+    background-color: #9322d950;
+  }
+  img {
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
   }
   span {
@@ -92,17 +103,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  text-decoration:underline .tablestate_y1 {
+  .tablestate_y1 {
     width: 5px;
     height: 5px;
     border-radius: 50%;
     background-color: #1890ff;
+    margin-right: 5px;
   }
   .tablestate_y2 {
     width: 5px;
     height: 5px;
     border-radius: 50%;
     background-color: #52c41a;
+    margin-right: 5px;
   }
   .tablestate_y3 {
     width: 5px;

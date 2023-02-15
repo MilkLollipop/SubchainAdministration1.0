@@ -80,6 +80,11 @@ export function ellipsisfour(data) {
     return data.slice(0, 4) + '...' + data.slice(data.length - 4, data.length);
   }
 }
+export function ellipsis64(data) {
+  if (data) {
+    return data.slice(0, 6) + '...' + data.slice(data.length - 4, data.length);
+  }
+}
 export function ellipsisthree(data) {
   if (data) {
     return data.slice(0, 3) + '...' + data.slice(data.length - 3, data.length);
