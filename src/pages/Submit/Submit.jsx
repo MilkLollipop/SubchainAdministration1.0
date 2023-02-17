@@ -11,6 +11,10 @@ import {
   CheckCircleFilled,
   ExclamationCircleFilled,
 } from '@ant-design/icons';
+import {
+  Subchainicon,
+  establish1,
+} from '../../api/request_data/overall_request';
 import { message, Upload, Select, Space, Button, Modal } from 'antd';
 export default function Submit() {
   const [shei, setShei] = useState(1);
@@ -23,10 +27,24 @@ export default function Submit() {
   const [upload, setUpload] = useState(0);
   const [uploadformat, setUploadformat] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [nodecd, setNodecd] = useState(4);
+  const [loading, setLoading] = useState(false);
+  //图片路径
+  const [imageUrl, setImageUrl] = useState();
+  const [imageUrlff, setImageUrlff] = useState();
   const [judgetext, setJudgetext] = useState({
     a: 'Created Successfully ',
     b: 'you can view and manage your chain in homepage',
   });
+  let zdata = {
+    name: '',
+    symbol: '',
+    user: localStorage.getItem('user_addr'),
+    icon_path: '',
+    officical_site: '',
+    alloc_and_stakes: [],
+    alloc_len: '',
+  };
   const handleChangeselect = (value) => {
     setShei(value);
   };
@@ -36,6 +54,22 @@ export default function Submit() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  // icon上传
+  const Subchainicon_q = async (item) => {
+    const data = await Subchainicon(item);
+    console.log('icon返回');
+    console.log(data);
+    if (data) {
+      setImageUrlff(data.data);
+    }
+  };
+  //创建子链1
+  const establish1_q = async (item) => {
+    const data = await establish1(item);
+    console.log('创建子链1');
+    console.log(data);
+  };
+  const formData = new FormData();
   //上传图片
   const getBase64 = (img, callback) => {
     const reader = new FileReader();
@@ -43,6 +77,9 @@ export default function Submit() {
     reader.readAsDataURL(img);
   };
   const beforeUpload = (file) => {
+    console.log(file);
+    formData.append('upload', file);
+    Subchainicon_q(formData);
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
       message.error('You can only upload JPG/PNG file!');
@@ -53,8 +90,7 @@ export default function Submit() {
     }
     return isJpgOrPng && isLt2M;
   };
-  const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState();
+
   const handleChange = (info) => {
     if (info.file.status === 'uploading') {
       setLoading(true);
@@ -70,14 +106,13 @@ export default function Submit() {
   };
   //添加node
   function nodeadd() {
-    console.log(tablexh);
+    setNodecd(nodecd + 1);
     let data = [];
     for (let i = 0; i < tablexh.length; i++) {
       data.push(tablexh[i]);
     }
-    data.push(tablexh.length + 1);
+    data.push(data[data.length - 1] + 1);
     setTablexh(data);
-    console.log(tablexh);
   }
   const uploadButton = (
     <div>
@@ -132,30 +167,56 @@ export default function Submit() {
   //上传文件
   //表格循环
   function tableloop() {
-    return tablexh.map(() => {
+    return tablexh.map((item) => {
       return (
-        <div className={Submit_ls.tableh}>
+        <div className={Submit_ls.tableh} id={item}>
           <div className={Submit_ls.tableh_block1}>
             <span>*</span>
-            <input placeholder="例：ex 0X01234…01234" autocomplete="off" />
+            <input
+              class="tableh_block_input1"
+              placeholder="例：ex 0X01234…01234"
+              autocomplete="off"
+              id={`address${item}`}
+            />
           </div>
           <div className={Submit_ls.tableh_block1}>
             <span>*</span>
-            <input placeholder="金额推荐为默认值，可更改" autocomplete="off" />
+            <input
+              class="tableh_block_input2"
+              placeholder="金额推荐为默认值，可更改"
+              autocomplete="off"
+              id={`alloc${item}`}
+            />
           </div>
           <div className={Submit_ls.tableh_block1}>
             <span>*</span>
-            <input placeholder="金额输入必须＞70000ERB" autocomplete="off" />
+            <input
+              class="tableh_block_input3"
+              placeholder="金额输入必须＞70000ERB"
+              autocomplete="off"
+              id={`validator${item}`}
+            />
           </div>
           <div className={Submit_ls.tableh_block2}>
-            <input placeholder="金额输入必须＞70000ERB" autocomplete="off" />
+            <input
+              class="tableh_block_input4"
+              placeholder="金额输入必须＞70000ERB"
+              autocomplete="off"
+              id={`stake${item}`}
+            />
           </div>
           <div className={Submit_ls.tableh_block3}>
-            <span className={Submit_ls.tableh_block3_icon1}>
+            <span
+              className={Submit_ls.tableh_block3_icon1}
+              onClick={clearoutlinedonclick.bind(this, item)}
+            >
               <ClearOutlined />
             </span>
-            {tablexh.length > 4 ? (
-              <span className={Submit_ls.tableh_block3_icon2}>
+            {nodecd > 4 ? (
+              <span
+                className={Submit_ls.tableh_block3_icon2}
+                onClick={deleteoutlinedonclick.bind(this, item)}
+              >
                 <DeleteOutlined />
               </span>
             ) : (
@@ -165,6 +226,97 @@ export default function Submit() {
         </div>
       );
     });
+  }
+  //清除
+  function clearoutlinedonclick(data) {
+    console.log(data);
+  }
+  //删除
+  function deleteoutlinedonclick(data) {
+    console.log(data);
+    document.getElementById(data).style.display = 'none';
+    setNodecd(nodecd - 1);
+  }
+  //wormholessubmit提交按钮
+  function wormholessubmit() {
+    // setJudgetext({
+    //   a: 'Created Successfully ',
+    //   b: 'you can view and manage your chain in homepage',
+    // });
+    // setIsModalOpen(true);
+    let a = 0;
+    let aa = 0;
+    let aaa = 0;
+    let b = [];
+    for (
+      let i = 0;
+      i < document.getElementsByClassName('tableh_block_input1').length;
+      i++
+    ) {
+      if (
+        document.getElementsByClassName('tableh_block_input1')[i].value == ''
+      ) {
+        a++;
+      }
+      b.push({
+        addr: document.getElementsByClassName('tableh_block_input1')[i].value,
+      });
+    }
+    for (
+      let i = 0;
+      i < document.getElementsByClassName('tableh_block_input2').length;
+      i++
+    ) {
+      if (
+        document.getElementsByClassName('tableh_block_input2')[i].value == ''
+      ) {
+        aa++;
+      }
+      b[i].alloc = document.getElementsByClassName('tableh_block_input2')[
+        i
+      ].value;
+    }
+    for (
+      let i = 0;
+      i < document.getElementsByClassName('tableh_block_input3').length;
+      i++
+    ) {
+      if (
+        document.getElementsByClassName('tableh_block_input3')[i].value == ''
+      ) {
+        aaa++;
+      }
+      b[i].validator = document.getElementsByClassName('tableh_block_input3')[
+        i
+      ].value;
+    }
+    for (
+      let i = 0;
+      i < document.getElementsByClassName('tableh_block_input4').length;
+      i++
+    ) {
+      b[i].exchanger = document.getElementsByClassName('tableh_block_input4')[
+        i
+      ].value;
+    }
+    let pd =
+      document.getElementById('name').value != '' &&
+      document.getElementById('symbol').value != '' &&
+      imageUrlff != undefined &&
+      a + aa + aaa < 1;
+    zdata.alloc_and_stakes.slice(0, zdata.alloc_and_stakes.length);
+    if (pd) {
+      zdata.name = document.getElementById('name').value;
+      zdata.symbol = document.getElementById('symbol').value;
+      zdata.icon_path = imageUrlff;
+      zdata.officical_site = document.getElementById('official').value;
+      for (let i = 0; i < b.length; i++) {
+        zdata.alloc_and_stakes.push(b[i]);
+      }
+      zdata.alloc_len = zdata.alloc_and_stakes.length;
+      console.log(zdata);
+      establish1_q(zdata);
+    }
   }
   return (
     <div id="submit">
@@ -201,6 +353,7 @@ export default function Submit() {
                 className={Submit_ls.titledatabox_block_text}
                 placeholder="Please enter a name"
                 autocomplete="off"
+                id="name"
               />
             </div>
             <div className={Submit_ls.titledatabox_block}>
@@ -212,6 +365,7 @@ export default function Submit() {
                 className={Submit_ls.titledatabox_block_text}
                 placeholder="Please enter a name"
                 autocomplete="off"
+                id="symbol"
               />
             </div>
             <div className={Submit_ls.titledatabox_block}>
@@ -225,7 +379,7 @@ export default function Submit() {
                   listType="picture-card"
                   className="avatar-uploader"
                   showUploadList={false}
-                  action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                  // action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
                   beforeUpload={beforeUpload}
                   onChange={handleChange}
                 >
@@ -256,6 +410,7 @@ export default function Submit() {
                 className={Submit_ls.titledatabox_block_text}
                 placeholder="Please enter a name"
                 autocomplete="off"
+                id="official"
               />
             </div>
           </div>
@@ -309,13 +464,7 @@ export default function Submit() {
               </div>
               <div
                 className={Submit_ls.tablebox_zhulianbutton}
-                onClick={() => {
-                  setJudgetext({
-                    a: 'Created Successfully ',
-                    b: 'you can view and manage your chain in homepage',
-                  });
-                  setIsModalOpen(true);
-                }}
+                onClick={wormholessubmit}
               >
                 Submit
               </div>

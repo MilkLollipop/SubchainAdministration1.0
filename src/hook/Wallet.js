@@ -153,10 +153,12 @@ const useWallet = () => {
         const provider = net ? new ethers.providers.Web3Provider(raw) : null;
         const signer = provider ? provider.getSigner() : null;
         const address = (await signer.getAddress()).toLowerCase();
-        PubSub.publish('MetaMaskAddress', address);
         console.log(address);
+        PubSub.publish('MetaMaskAddress', address);
         console.log(signer);
+        PubSub.publish('user_signer', signer);
         console.log(provider);
+        PubSub.publish('user_provider', provider);
         // dispatch({
         //   type: 'userModel/setUserAddr',
         //   payload: address,

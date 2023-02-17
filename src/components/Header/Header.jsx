@@ -3,17 +3,26 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'umi';
 import { Popover, Modal, message } from 'antd';
 import useWallet from '@/hook/Wallet';
+import { ethers, Signer, utils } from 'ethers';
 import { encode, decode } from 'js-base64';
-import { CopyOutlined, ExportOutlined } from '@ant-design/icons';
+import {
+  CopyOutlined,
+  ExportOutlined,
+  DownloadOutlined,
+} from '@ant-design/icons';
 import indentData from '@/utils/myIdent';
 import { ellipsis64 } from '../../utils/methods/Methods';
 import { signMessage } from '@/hook/wallet1';
+import { ToastContainer, toast } from 'react-toastify';
 import PubSub from 'pubsub-js';
 import copy from 'copy-to-clipboard';
 import {
   adsBalance,
   Popularsubchain,
+  userLogin,
+  urllogin,
 } from '../../api/request_data/overall_request';
+const crypto = require('crypto');
 export default function Header(props) {
   // console.log(JSON.parse(props.props.location.query.data));
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +31,15 @@ export default function Header(props) {
   //登录状态
   const [loginstatus, setLoginstatus] = useState(false);
   const [addressblock, setAddressblock] = useState(0);
+  const [smartcontractblock, setSmartcontractblock] = useState(0);
+  //user_signer
+  const [usersigner, setUsersigner] = useState({});
+  //余额
+  const [balancedata, setBalancedata] = useState({});
+  //登录login
+  const [signinlogin, setSigninlogin] = useState({});
+  //wor  sig
+  const [worsig, setWorsig] = useState('');
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -67,13 +85,13 @@ export default function Header(props) {
     // });
   };
   const logOut = () => {
-    setLoginstatus(false);
     setAccountaddress('');
     if (localStorage.getItem('WormWallet') != 'true') {
       disconnect();
     }
+
     props.props.history.push('/');
-    localStorage.removeItem('MetaMaskAddress');
+
     window.myKey = null;
   };
   //余额查询
@@ -81,44 +99,211 @@ export default function Header(props) {
     const data = await adsBalance(item);
     console.log('余额查询');
     console.log(data);
+    if (data) {
+      setBalancedata(data);
+    }
+  };
+  //登录login
+  const urllogin_q = async (item) => {
+    const wallet = ethers.Wallet.createRandom();
+    console.log(wallet);
+    let md5Data = '';
+    let result = 0;
+    const data = await urllogin(item);
+    console.log('登录login');
+    console.log(data);
+    if (data) {
+      if (data.code == 0) {
+        const hash = data.data.hash.toLowerCase();
+        const secret = data.data.secret;
+        do {
+          md5Data = crypto
+            .createHash('md5')
+            .update(secret + result)
+            .digest('hex');
+          result++;
+        } while (md5Data.toLowerCase() !== hash);
+        const secondRequestData = {
+          approve_addr: wallet.address,
+          result: String(result - 1),
+          time_stamp: String(data.data.timeStamp),
+          user_addr: address,
+        };
+        let secondRequestDataSig;
+        if (localStorage.getItem('whatwallet') == 'Limion') {
+          secondRequestDataSig = signMessage(
+            JSON.stringify(secondRequestData),
+            address,
+          );
+        } else {
+          console.log(secondRequestData);
+          secondRequestDataSig = await signer.signMessage(
+            JSON.stringify(secondRequestData),
+          );
+        }
+        console.log(secondRequestDataSig);
+        const formatSecondRequestData = {
+          approve_addr: wallet.address,
+          result: String(result - 1),
+          sig: secondRequestDataSig,
+          time_stamp: String(data.data.timeStamp),
+          user_addr: address,
+          // user_addr: '0xbc2f531de913ccd0a9c84d2b49425bbe4bb3233e',
+          // approve_addr: '0x024d41cdbd1a420fF8B8dD2b8da167851b4e580e',
+          // result: '9603',
+          // time_stamp: '1676626885',
+          // sig: '0x6f0bf4dff821c279c5ea18f762bdd73dcf879108806d07f89c534c64c65675c36c355a04638cf1c3832a5076eb60815b4bdbfbb108194ed1e7615493276cb8091b',
+        };
+        console.log(formatSecondRequestData);
+        const datatwo = await urllogin(formatSecondRequestData);
+        console.log(datatwo);
+        localStorage.setItem('token', datatwo.data.token);
+      }
+    }
   };
 
+  // curl  -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}' 127.0.0.1:8560
+  // curl
+  //   - H "Content-type: application/json"
+  //     - X POST--data '{"jsonrpc":"2.0","method":"eth_sendTransaction","params":[{"from":"0x5051B76579BC966A9480dd6E72B39A4C89c1154C","to":"0xFB7d285519A5A377e6c235ad816Ef91f82AabbEd","gas":"0x15f90","gasPrice":"0x430e23400","value":"0x9b6e64a8ec60000"}],"id":"1"}' http://43.129.181.130:8561
+  //登录loginwor
+  const urlloginwor_q = async (item) => {
+    console.log(item);
+    const wallet = ethers.Wallet.createRandom();
+    localStorage.setItem('approve_addr', wallet.address);
+    console.log(wallet);
+    let md5Data = '';
+    let result = 0;
+    localStorage.setItem('privateKey', wallet.privateKey);
+    item.approve_addr = wallet.address;
+    const data = await urllogin(item);
+    console.log('登录login');
+    console.log(data);
+    if (data) {
+      if (data.code == 0) {
+        const hash = data.data.hash.toLowerCase();
+        const secret = data.data.secret;
+        do {
+          md5Data = crypto
+            .createHash('md5')
+            .update(secret + result)
+            .digest('hex');
+          result++;
+        } while (md5Data.toLowerCase() !== hash);
+        const secondRequestData = {
+          approve_addr: wallet.address,
+          result: String(result - 1),
+          time_stamp: String(data.data.timeStamp),
+          user_addr: item.user_addr,
+        };
+        localStorage.setItem('time_stamp', String(data.data.timeStamp));
+        localStorage.setItem('result', String(result - 1));
+        let secondRequestDataSig;
+        console.log(secondRequestData);
+        console.log(item.user_addr + '====================');
+        let url = localStorage.getItem('backUrl');
+        secondRequestDataSig = signMessage(
+          JSON.stringify(secondRequestData),
+          item.user_addr,
+          url,
+        );
+
+        console.log(secondRequestDataSig);
+        // const formatSecondRequestData = {
+        //   user_addr: accountaddress,
+        //   approve_addr: wallet.address,
+        //   result: String(result - 1),
+        //   time_stamp: String(data.data.timeStamp),
+        //   sig: secondRequestDataSig,
+        // };
+        // console.log(formatSecondRequestData);
+        // const datatwo = await urllogin(formatSecondRequestData);
+        // console.log(datatwo);
+      }
+    }
+  };
+  const secondLoginWallet = async (sig) => {
+    localStorage.removeItem('option');
+    const formatSecondRequestData = {
+      // user_addr: localStorage.getItem('user_addr'),
+      // approve_addr: localStorage.getItem('approve_addr'),
+      // result: localStorage.getItem('result'),
+      // time_stamp: localStorage.getItem('time_stamp'),
+      // sig: sig,
+      approve_addr: localStorage.getItem('approve_addr'),
+      result: localStorage.getItem('result'),
+      time_stamp: localStorage.getItem('time_stamp'),
+      user_addr: localStorage.getItem('user_addr'),
+      sig: sig,
+    };
+    const secondLoginRes = await urllogin(formatSecondRequestData);
+    console.log(secondLoginRes);
+    localStorage.setItem('token', secondLoginRes.data.token);
+    if (secondLoginRes) {
+      localStorage.removeItem('approve_addr');
+      localStorage.removeItem('result');
+      localStorage.removeItem('time_stamp');
+    }
+  };
+  let userLogindata = {
+    user_addr: accountaddress,
+    approve_addr: '',
+    result: '',
+    time_stamp: '',
+    sig: '',
+  };
   useEffect(() => {
     if (Object.keys(props.props.location.query).length != 0) {
-      PubSub.subscribe('WormWalletAddress', (msg, index) => {
-        console.log(index);
-        setAccountaddress(index);
-      });
-    }
-    if (localStorage.getItem('MetaMaskAddress')) {
-      setAccountaddress(localStorage.getItem('MetaMaskAddress'));
+      console.log(props.props.location);
+      if (props.props.location.query.data) {
+        let add = JSON.parse(props.props.location.query.data).address;
+        console.log(add);
+        localStorage.setItem('user_addr', add);
+        setAccountaddress(add);
+        let userLogindatawor = {
+          user_addr: add,
+          approve_addr: '',
+          result: '',
+          time_stamp: '',
+          sig: '',
+        };
+        urlloginwor_q(userLogindatawor);
+      }
+      if (props.props.location.query.sig) {
+        console.log();
+        secondLoginWallet(props.props.location.query.sig);
+      }
     }
     adsBalance_q(
-      accountaddress != ''
-        ? accountaddress
-        : localStorage.getItem('MetaMaskAddress'),
+      accountaddress != '' ? accountaddress : localStorage.getItem('user_addr'),
     );
-    if (props.props.location.query.data) {
-      console.log(JSON.parse(props.props.location.query.data));
-      localStorage.setItem('LiminoAddress', props.props.location.query.data);
+    if (localStorage.getItem('user_addr')) {
+      setAccountaddress(localStorage.getItem('user_addr'));
     }
-    if (localStorage.getItem('LiminoAddress')) {
-      setAccountaddress(
-        JSON.parse(localStorage.getItem('LiminoAddress')).address,
-      );
-    }
+    PubSub.subscribe('user_signer', (msg, index) => {
+      setUsersigner(index);
+    });
   }, []);
+
   useEffect(() => {
     if (accountaddress) {
       console.log(accountaddress);
       setLoginstatus(true);
       adsBalance_q(accountaddress);
+      if (localStorage.getItem('whatwallet') == 'MetaMask') {
+        urllogin_q(userLogindata);
+      }
     }
   }, [accountaddress]);
   useEffect(() => {
-    console.log(loginstatus);
+    if (signer) {
+      console.log(signer);
+    }
+  }, [signer]);
+  useEffect(() => {
     PubSub.publish('Allloginstatus', loginstatus);
   }, [loginstatus]);
+  useEffect(() => {}, [signinlogin]);
   // MetaMask登录
   function MetaMaskSignIn() {
     setIsModalOpen(false);
@@ -126,17 +311,16 @@ export default function Header(props) {
     localStorage.setItem('whatwallet', 'MetaMask');
     PubSub.subscribe('MetaMaskAddress', (msg, index) => {
       console.log(index);
-      localStorage.setItem('MetaMaskAddress', index);
+      localStorage.setItem('user_addr', index);
       setAccountaddress(index);
     });
   }
   // WormWallet登录
   const WormWalletSignIn = (e) => {
     setIsModalOpen(false);
-    localStorage.setItem('WormWallet', 'true');
-    localStorage.setItem('option', 'login');
     localStorage.setItem('whatwallet', 'Limion');
     let url = location.href;
+    console.log(url);
     const backUrl = encode(url);
     localStorage.setItem('backUrl', url);
     console.log('backUrl', url);
@@ -153,11 +337,15 @@ export default function Header(props) {
   }
   //退出
   function accountwithdrawal() {
-    localStorage.removeItem('whatwallet');
+    localStorage.removeItem('token');
     if (localStorage.getItem('whatwallet') == 'MetaMask') {
       logOut();
+      localStorage.removeItem('whatwallet');
+      localStorage.removeItem('user_addr');
+      setLoginstatus(false);
     } else {
-      localStorage.removeItem('LiminoAddress');
+      localStorage.removeItem('whatwallet');
+      localStorage.removeItem('user_addr');
       setLoginstatus(false);
       setAccountaddress('');
       props.props.history.push('/');
@@ -168,6 +356,13 @@ export default function Header(props) {
       setAddressblock(1);
     } else {
       setAddressblock(0);
+    }
+  }
+  function Smartcontractonclick() {
+    if (smartcontractblock == 0) {
+      setSmartcontractblock(1);
+    } else {
+      setSmartcontractblock(0);
     }
   }
   return (
@@ -216,8 +411,35 @@ export default function Header(props) {
             </div>
           ) : (
             <div className={Header_ls.loginBox}>
-              <div className={Header_ls.loginBox_Smartcontract}>
+              <div
+                className={Header_ls.loginBox_Smartcontract}
+                onClick={Smartcontractonclick}
+              >
                 Smart contract
+                {smartcontractblock == 1 ? (
+                  <div className={Header_ls.loginBox_block}>
+                    <p>{ellipsis64(balancedata.data.contract)}</p>
+                    <div>
+                      <span
+                        onClick={copyonclick.bind(
+                          this,
+                          balancedata.data.contract,
+                        )}
+                      >
+                        <CopyOutlined />
+                      </span>
+                      <span
+                        onClick={() => {
+                          window.open('http://192.168.1.237:8081/v2/contract');
+                        }}
+                      >
+                        <DownloadOutlined />
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  ''
+                )}
               </div>
               <div
                 className={Header_ls.loginBox_addressBox}
@@ -260,7 +482,13 @@ export default function Header(props) {
                       </div>
                     </div>
                     <div className={Header_ls.loginBox_addressBox_data_t}>
-                      <p></p>
+                      <p>
+                        {Number(
+                          utils.formatEther(balancedata.data.balance),
+                        ).toFixed(2)}{' '}
+                        ERB
+                      </p>
+                      <span>${Number(balancedata.data.value).toFixed(2)}</span>
                     </div>
                   </div>
                 ) : (

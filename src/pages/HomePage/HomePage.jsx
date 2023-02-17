@@ -68,6 +68,11 @@ export default function HomePage() {
       label: 'All',
     },
   ];
+  // let bbb =
+  let aaa =
+    '[{"addr":"213","alloc":"123","validator":"123","exchanger":""},{"addr":"123","alloc":"123","validator":"123","exchanger":""},{"addr":"123","alloc":"123","validator":"123","exchanger":""},{"addr":"123","alloc":"123","validator":"123","exchanger":""}]';
+
+  console.log(JSON.parse(aaa));
   const Hotcolumns = [
     {
       title: 'Chain id',
@@ -153,16 +158,24 @@ export default function HomePage() {
       dataIndex: 'status',
       key: 'status',
       align: 'center',
-      render: (text) =>
+      render: (text, data) =>
         text == 0 ? (
           <div className={HomePage_ls.tablestate}>
             <div className={HomePage_ls.tablestate_y1}></div>
-            <Link to={{ pathname: '/Details', state: 4 }}>Need Deployment</Link>
+            <Link
+              to={{ pathname: '/Details', state: { label: 4, data: data } }}
+            >
+              Need Deployment
+            </Link>
           </div>
         ) : (
           <div className={HomePage_ls.tablestate}>
             <div className={HomePage_ls.tablestate_y2}></div>
-            <Link to={{ pathname: '/Details', state: 5 }}>Running</Link>
+            <Link
+              to={{ pathname: '/Details', state: { label: 5, data: data } }}
+            >
+              Running
+            </Link>
           </div>
         ),
     },
@@ -254,21 +267,21 @@ export default function HomePage() {
         text == 'Need Deployment' ? (
           <Link
             style={{ color: '#1890FF', textDecoration: 'underline' }}
-            to={{ pathname: '/Details', state: 1 }}
+            to={{ pathname: '/Details', state: { label: 1 } }}
           >
             {text}
           </Link>
         ) : text == 'Need Starting' ? (
           <Link
             style={{ color: '#F5222D', textDecoration: 'underline' }}
-            to={{ pathname: '/Details', state: 2 }}
+            to={{ pathname: '/Details', state: { label: 2 } }}
           >
             {text}
           </Link>
         ) : (
           <Link
             style={{ color: '#3AAE55', textDecoration: 'underline' }}
-            to={{ pathname: '/Details', state: 3 }}
+            to={{ pathname: '/Details', state: { label: 3 } }}
           >
             {text}
           </Link>

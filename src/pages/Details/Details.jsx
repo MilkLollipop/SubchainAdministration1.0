@@ -18,6 +18,7 @@ export default function Details(props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [judge, setJudge] = useState(0);
   const [judgetext, setJudgetext] = useState('');
+  const [subchaindata, setSubchaindata] = useState({});
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -51,7 +52,8 @@ export default function Details(props) {
     setSee(data);
   }
   const content = <div className={Details_ls.content}>More Information</div>;
-  console.log(props.location.state);
+  console.log(props.location.state.label);
+  console.log(props.location.state.data);
   let value = {
     id: 1,
     chains: 'name',
@@ -61,6 +63,12 @@ export default function Details(props) {
     volume: '$50000M',
     state: 'Need Deployment',
   };
+  useEffect(() => {
+    console.log(props.location.state.data);
+    // if () {
+    //   setSubchaindata(props.location.state.data)
+    // }
+  }, []);
   //提交按钮
   function Confirm1() {
     console.log(document.getElementById('Needinput1').value);
@@ -118,9 +126,9 @@ export default function Details(props) {
               Chain List
             </Link>{' '}
             /{' '}
-            {props.location.state == 1 || props.location.state == 4
+            {props.location.state.label == 1 || props.location.state.label == 4
               ? 'Need Deployment'
-              : props.location.state == 2
+              : props.location.state.label == 2
               ? ' Need Starting'
               : ' Running'}
           </div>
@@ -221,7 +229,7 @@ export default function Details(props) {
                   </div>
                 </div>
               )}
-              {props.location.state == 4 ? (
+              {props.location.state.label == 4 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -272,7 +280,7 @@ export default function Details(props) {
                     Back
                   </Link>
                 </>
-              ) : props.location.state == 1 ? (
+              ) : props.location.state.label == 1 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -339,7 +347,7 @@ export default function Details(props) {
                     Confirm
                   </div>
                 </>
-              ) : props.location.state == 3 ? (
+              ) : props.location.state.label == 3 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -428,7 +436,7 @@ export default function Details(props) {
                     Confirm
                   </div>
                 </>
-              ) : props.location.state == 5 ? (
+              ) : props.location.state.label == 5 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
