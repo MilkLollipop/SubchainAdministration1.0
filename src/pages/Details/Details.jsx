@@ -10,6 +10,7 @@ import {
   CheckCircleFilled,
   ExclamationCircleFilled,
 } from '@ant-design/icons';
+import { Genesisdata } from '../../api/request_data/overall_request';
 import { Popover, Modal } from 'antd';
 export default function Details(props) {
   const [see, setSee] = useState(1);
@@ -19,6 +20,9 @@ export default function Details(props) {
   const [judge, setJudge] = useState(0);
   const [judgetext, setJudgetext] = useState('');
   const [subchaindata, setSubchaindata] = useState({});
+  const [label, setLabel] = useState();
+  //子链Genesis获取
+  const [genesistext, setGenesistext] = useState({});
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -52,23 +56,29 @@ export default function Details(props) {
     setSee(data);
   }
   const content = <div className={Details_ls.content}>More Information</div>;
-  console.log(props.location.state.label);
-  console.log(props.location.state.data);
-  let value = {
-    id: 1,
-    chains: 'name',
-    address: '0x123456789012345678901234567890012345678901234567890',
-    time: '1675783941',
-    price: '50000',
-    volume: '$50000M',
-    state: 'Need Deployment',
-  };
   useEffect(() => {
-    console.log(props.location.state.data);
-    // if () {
-    //   setSubchaindata(props.location.state.data)
-    // }
+    if (props.location.state) {
+      console.log(props.location.state);
+      setSubchaindata(props.location.state.data);
+      localStorage.setItem(
+        'DetailsData',
+        JSON.stringify(props.location.state.data),
+      );
+      setLabel(props.location.state.label);
+      localStorage.setItem('labeldata', props.location.state.label);
+    } else {
+      setSubchaindata(
+        localStorage.getItem('DetailsData')
+          ? JSON.parse(localStorage.getItem('DetailsData'))
+          : '',
+      );
+      setLabel(localStorage.getItem('labeldata'));
+    }
   }, []);
+  useEffect(() => {
+    if (subchaindata) {
+    }
+  }, [subchaindata]);
   //提交按钮
   function Confirm1() {
     console.log(document.getElementById('Needinput1').value);
@@ -126,9 +136,9 @@ export default function Details(props) {
               Chain List
             </Link>{' '}
             /{' '}
-            {props.location.state.label == 1 || props.location.state.label == 4
+            {label == 1 || label == 4
               ? 'Need Deployment'
-              : props.location.state.label == 2
+              : label == 2
               ? ' Need Starting'
               : ' Running'}
           </div>
@@ -143,15 +153,17 @@ export default function Details(props) {
               <p>Volume:</p>
             </div>
             <div className={Details_ls.textBox_text}>
-              <p>{value.id}</p>
+              <p>111</p>
               <p>
-                <span></span>
-                {value.chains}
+                <span className={Details_ls.textBox_textimg}>
+                  {/* <img src={subchaindata.icon_path} /> */}
+                </span>
+                222
               </p>
-              <p>{value.address}</p>
-              <p>{value.time}</p>
-              <p>{value.price}</p>
-              <p>{value.volume}</p>
+              <p>333</p>
+              <p>444</p>
+              <p>555</p>
+              <p>$ 666</p>
             </div>
           </div>
           <div className={Details_ls.textBox_data}>
@@ -223,13 +235,13 @@ export default function Details(props) {
                   <div>
                     <pre>
                       <code style={{ color: '#000000' }}>
-                        {JSON.stringify(metadata, null, ' ')}
+                        {JSON.stringify(genesistext, null, ' ')}
                       </code>
                     </pre>
                   </div>
                 </div>
               )}
-              {props.location.state.label == 4 ? (
+              {label == 4 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -280,7 +292,7 @@ export default function Details(props) {
                     Back
                   </Link>
                 </>
-              ) : props.location.state.label == 1 ? (
+              ) : label == 1 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -347,7 +359,7 @@ export default function Details(props) {
                     Confirm
                   </div>
                 </>
-              ) : props.location.state.label == 3 ? (
+              ) : label == 3 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -436,7 +448,7 @@ export default function Details(props) {
                     Confirm
                   </div>
                 </>
-              ) : props.location.state.label == 5 ? (
+              ) : label == 5 ? (
                 <>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
                     <div
@@ -447,7 +459,7 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
-                      http://wwwdgfdgfggfs.com
+                      {subchaindata.official_site}
                     </div>
                   </div>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
@@ -459,7 +471,7 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
-                      http://wwwdgfdgfggfs.com
+                      {subchaindata.rpc}
                     </div>
                   </div>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
@@ -471,7 +483,7 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
-                      Please Enter
+                      {subchaindata.url}
                     </div>
                   </div>
                   <Link

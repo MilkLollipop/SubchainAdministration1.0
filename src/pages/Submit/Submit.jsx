@@ -11,11 +11,9 @@ import {
   CheckCircleFilled,
   ExclamationCircleFilled,
 } from '@ant-design/icons';
-import {
-  Subchainicon,
-  establish1,
-} from '../../api/request_data/overall_request';
+import { create } from '../../api/request_data/overall_request';
 import { message, Upload, Select, Space, Button, Modal } from 'antd';
+import useWallet from '@/hook/Wallet';
 export default function Submit() {
   const [shei, setShei] = useState(1);
   const [code, setCode] = useState(0);
@@ -32,19 +30,22 @@ export default function Submit() {
   //图片路径
   const [imageUrl, setImageUrl] = useState();
   const [imageUrlff, setImageUrlff] = useState();
+  const [jsonUrlff, setJsonUrlff] = useState();
   const [judgetext, setJudgetext] = useState({
     a: 'Created Successfully ',
     b: 'you can view and manage your chain in homepage',
   });
-  let zdata = {
-    name: '',
-    symbol: '',
-    user: localStorage.getItem('user_addr'),
-    icon_path: '',
-    officical_site: '',
-    alloc_and_stakes: [],
-    alloc_len: '',
-  };
+  const {
+    connectWallet,
+    connect,
+    disconnect,
+    signer,
+    address,
+    net,
+    provider,
+    showSelectWallet,
+    setShowSelectWallet,
+  } = useWallet();
   const handleChangeselect = (value) => {
     setShei(value);
   };
@@ -54,22 +55,6 @@ export default function Submit() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  // icon上传
-  const Subchainicon_q = async (item) => {
-    const data = await Subchainicon(item);
-    console.log('icon返回');
-    console.log(data);
-    if (data) {
-      setImageUrlff(data.data);
-    }
-  };
-  //创建子链1
-  const establish1_q = async (item) => {
-    const data = await establish1(item);
-    console.log('创建子链1');
-    console.log(data);
-  };
-  const formData = new FormData();
   //上传图片
   const getBase64 = (img, callback) => {
     const reader = new FileReader();
@@ -78,8 +63,8 @@ export default function Submit() {
   };
   const beforeUpload = (file) => {
     console.log(file);
+    const formData = new FormData();
     formData.append('upload', file);
-    Subchainicon_q(formData);
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
       message.error('You can only upload JPG/PNG file!');
@@ -99,6 +84,7 @@ export default function Submit() {
     if (info.file.status === 'done') {
       // Get this url from response in real world.
       getBase64(info.file.originFileObj, (url) => {
+        console.log(url);
         setLoading(false);
         setImageUrl(url);
       });
@@ -129,11 +115,6 @@ export default function Submit() {
   //上传图片
   //上传文件
   const myprops = {
-    name: 'file',
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-    headers: {
-      authorization: 'authorization-text',
-    },
     onChange(info) {
       setmyJzicon(1);
       if (info.file.status !== 'uploading') {
@@ -165,6 +146,12 @@ export default function Submit() {
     },
   };
   //上传文件
+  const beforeUpload2 = (file) => {
+    console.log(file);
+    const formData = new FormData();
+    formData.append('file', file);
+    return true;
+  };
   //表格循环
   function tableloop() {
     return tablexh.map((item) => {
@@ -237,6 +224,15 @@ export default function Submit() {
     document.getElementById(data).style.display = 'none';
     setNodecd(nodecd - 1);
   }
+  let zdata = {
+    name: '',
+    symbol: '',
+    user: localStorage.getItem('user_addr'),
+    icon: '',
+    offical_site: '',
+    alloc_and_stakes: [],
+    create_time: new Date().getTime(),
+  };
   //wormholessubmit提交按钮
   function wormholessubmit() {
     // setJudgetext({
@@ -302,20 +298,138 @@ export default function Submit() {
     let pd =
       document.getElementById('name').value != '' &&
       document.getElementById('symbol').value != '' &&
-      imageUrlff != undefined &&
+      imageUrl != undefined &&
       a + aa + aaa < 1;
-    zdata.alloc_and_stakes.slice(0, zdata.alloc_and_stakes.length);
+    // zdata.alloc_and_stakes.slice(0, zdata.alloc_and_stakes.length);
     if (pd) {
       zdata.name = document.getElementById('name').value;
       zdata.symbol = document.getElementById('symbol').value;
-      zdata.icon_path = imageUrlff;
-      zdata.officical_site = document.getElementById('official').value;
+      zdata.icon = imageUrl;
+      zdata.offical_site = document.getElementById('official').value;
       for (let i = 0; i < b.length; i++) {
         zdata.alloc_and_stakes.push(b[i]);
       }
-      zdata.alloc_len = zdata.alloc_and_stakes.length;
+      zdata.genesis = {
+        config: {
+          homesteadBlock: 0,
+          eip150Block: 0,
+          eip155Block: 0,
+          eip158Block: 0,
+          byzantiumBlock: 0,
+          constantinopleBlock: 0,
+          petersburgBlock: 0,
+          istanbulBlock: 0,
+          berlinBlock: 0,
+          londonBlock: 0,
+          istanbul: {
+            epoch: 30000,
+            policy: 0,
+            ceil2Nby3Block: 0,
+          },
+          isQuorum: true,
+        },
+        nonce: '0x0',
+        extraData:
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+        gasLimit: '3758096384',
+        difficulty: '0x1',
+        alloc: {},
+        stake: {},
+        validator: {},
+        coinbase: '0x0000000000000000000000000000000000000000',
+        mixHash:
+          '0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365',
+        parentHash:
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+        timestamp: '0',
+        dir: '',
+        inject_number: 4096,
+        start_index: 0,
+        royalty: 1000,
+        creator: '0x0000000000000000000000000000000000000000',
+      };
+      zdata.alloc_and_stakes.map((item) => {
+        zdata.genesis.alloc[item.addr] = {
+          balance: item.alloc,
+        };
+        item.exchanger
+          ? (zdata.genesis.stake[item.addr] = {
+              balance: item.exchanger,
+            })
+          : '';
+        zdata.genesis.validator[item.addr] = {
+          balance: item.validator,
+        };
+      });
+      delete zdata.alloc_and_stakes;
       console.log(zdata);
-      establish1_q(zdata);
+      console.log(signer);
+      create(signer, zdata).then(() => {
+        console.log('222222222222');
+      });
+    }
+  }
+  function isJSON(str) {
+    try {
+      var obj = JSON.parse(str);
+      if (typeof obj == 'object' && obj) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+  let zdata2 = {
+    name: '',
+    symbol: '',
+    user: localStorage.getItem('user_addr'),
+    icon_path: '',
+    officical_site: '',
+    alloc_and_stakes: '',
+    alloc_len: '',
+  };
+
+  function mycodeonclick() {
+    // setJudgetext({
+    //   a: 'Created Successfully ',
+    //   b: 'you can view and manage your chain in homepage',
+    // });
+    // setIsModalOpen(true);
+
+    if (code == 0) {
+      let pd =
+        document.getElementById('name').value != '' &&
+        document.getElementById('symbol').value != '' &&
+        imageUrlff != undefined &&
+        document.getElementById('textareadata').value != '' &&
+        isJSON(document.getElementById('textareadata').value) == true;
+      if (pd) {
+        zdata2.name = document.getElementById('name').value;
+        zdata2.symbol = document.getElementById('symbol').value;
+        zdata2.icon_path = imageUrlff;
+        zdata2.officical_site = document.getElementById('official').value;
+        zdata2.alloc_and_stakes = JSON.stringify(
+          document.getElementById('textareadata').value,
+        );
+      }
+      console.log();
+    } else {
+      let pd =
+        document.getElementById('name').value != '' &&
+        document.getElementById('symbol').value != '' &&
+        imageUrlff != undefined &&
+        jsonUrlff;
+      console.log(pd);
+      if (pd) {
+        zdata2.name = document.getElementById('name').value;
+        zdata2.symbol = document.getElementById('symbol').value;
+        zdata2.icon_path = imageUrlff;
+        zdata2.officical_site = document.getElementById('official').value;
+        console.log(jsonUrlff);
+        zdata2.alloc_and_stakes = jsonUrlff;
+      }
     }
   }
   return (
@@ -499,14 +613,17 @@ export default function Submit() {
               </div>
               {code == 0 ? (
                 <div className={Submit_ls.mytablebox_dhtitlebox_table}>
-                  <textarea placeholder="Tips：The code must includes the information of Address ,Balance_Alloc,Balance_Validator;Make sure your code is in the right format so that the chain can be created successfully." />
+                  <textarea
+                    id="textareadata"
+                    placeholder="Tips：The code must includes the information of Address ,Balance_Alloc,Balance_Validator;Make sure your code is in the right format so that the chain can be created successfully."
+                  />
                   <p>*Only Support JSON Format</p>
                 </div>
               ) : (
                 <>
                   <div className={Submit_ls.Uploadmywj} id="mywj">
                     {upload == 0 ? (
-                      <Upload {...myprops}>
+                      <Upload {...myprops} beforeUpload={beforeUpload2}>
                         <Button
                           className={Submit_ls.Uploadmywj_b}
                           icon={<UploadOutlined />}
@@ -586,13 +703,7 @@ export default function Submit() {
               )}
               <div
                 className={Submit_ls.myfilltablebox_zhulianbutton}
-                onClick={() => {
-                  setJudgetext({
-                    a: 'Created Successfully ',
-                    b: 'you can view and manage your chain in homepage',
-                  });
-                  setIsModalOpen(true);
-                }}
+                onClick={mycodeonclick}
               >
                 Submit
               </div>

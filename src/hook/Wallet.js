@@ -244,7 +244,7 @@ const useWallet = () => {
       }
     } else {
       try {
-        if (localStorage.getItem('WormWallet') == 'metamask') {
+        if (localStorage.getItem('whatwallet') == 'MetaMask') {
           if (!wallet.raw) {
             // const raw = await web3Modal.connect();
             let raw;

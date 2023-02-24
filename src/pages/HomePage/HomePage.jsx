@@ -1,6 +1,7 @@
 import HomePage_ls from './HomePage.less';
 import React, { useState, useEffect } from 'react';
 import { Space, Table, Tag, Pagination, Popover, Cascader } from 'antd';
+import treaty from '../../utils/treaty.json';
 import { ellipsisfour } from '../../utils/methods/Methods';
 import { Link } from 'umi';
 import {
@@ -9,11 +10,9 @@ import {
   QuestionCircleOutlined,
   CaretDownOutlined,
 } from '@ant-design/icons';
-import {
-  adsBalance,
-  Popularsubchain,
-} from '../../api/request_data/overall_request';
+
 export default function HomePage() {
+  console.log(treaty);
   //页数
   const [page, setPage] = useState(1);
   const [titledj, setTitledj] = useState(0);
@@ -22,7 +21,7 @@ export default function HomePage() {
   //价值排序
   const [pricepx, setPricepx] = useState(0);
   //热门子链
-  const [popularsubchaindata, setPopularsubchaindata] = useState({});
+  const [popularsubchaindata, setPopularsubchaindata] = useState([]);
   //MY子链
   const [mypopularsubchaindata, setMypopularsubchaindata] = useState({});
   //MetaMaskAddress
@@ -68,11 +67,6 @@ export default function HomePage() {
       label: 'All',
     },
   ];
-  // let bbb =
-  let aaa =
-    '[{"addr":"213","alloc":"123","validator":"123","exchanger":""},{"addr":"123","alloc":"123","validator":"123","exchanger":""},{"addr":"123","alloc":"123","validator":"123","exchanger":""},{"addr":"123","alloc":"123","validator":"123","exchanger":""}]';
-
-  console.log(JSON.parse(aaa));
   const Hotcolumns = [
     {
       title: 'Chain id',
@@ -328,36 +322,23 @@ export default function HomePage() {
     page: page,
     flag: 'create_time',
     order: 2,
-    user: metamaskaddress || localStorage.getItem('MetaMaskAddress'),
+    user: metamaskaddress || localStorage.getItem('user_addr'),
     status: '',
   };
-  //热门子链查询
-  const Popularsubchain_q = async (item) => {
-    const data = await Popularsubchain(item);
-    console.log('热门子链查询');
-    console.log(data);
-    if (data) {
-      setPopularsubchaindata(data);
-    }
-  };
-  //my子链查询
-  const myPopularsubchain_q = async (item) => {
-    const data = await Popularsubchain(item);
-    console.log('my子链查询');
-    console.log(data);
-    if (data) {
-      setMypopularsubchaindata(data);
-    }
-  };
+
   useEffect(() => {
-    PubSub.subscribe('Allloginstatus', (msg, index) => {
+    PubSub.subscribe('login_status', (msg, index) => {
       setLoginstatus(index);
     });
-    Popularsubchain_q(hotpaging);
-    myPopularsubchain_q(mypaging);
-    PubSub.subscribe('MetaMaskAddress', (msg, index) => {
+    PubSub.subscribe('user_addr', (msg, index) => {
       setMetamaskaddress(index);
     });
+    if (localStorage.getItem('SubchainData')) {
+      console.log(JSON.parse(localStorage.getItem('SubchainData')));
+      setPopularsubchaindata(
+        Object.values(JSON.parse(localStorage.getItem('SubchainData'))),
+      );
+    }
   }, []);
   useEffect(() => {
     if (popularsubchaindata) {
@@ -381,11 +362,9 @@ export default function HomePage() {
     if (data == 0) {
       hotpaging.flag = 'create_time';
       hotpaging.order = 2;
-      Popularsubchain_q(hotpaging);
     } else {
       hotpaging.flag = 'create_time';
       hotpaging.order = 1;
-      Popularsubchain_q(hotpaging);
     }
   }
   //价值排序
@@ -404,7 +383,6 @@ export default function HomePage() {
     } else {
       hotpaging.status = '';
     }
-    Popularsubchain_q(hotpaging);
   }
   return (
     <>
@@ -444,13 +422,13 @@ export default function HomePage() {
               <Table
                 className={HomePage_ls.table}
                 columns={Hotcolumns}
-                dataSource={popularsubchaindata.data}
+                dataSource={popularsubchaindata}
                 pagination={false}
               />
               <Pagination
                 className={HomePage_ls.page}
                 defaultPageSize={8}
-                total={popularsubchaindata.total}
+                total={popularsubchaindata.length}
                 showSizeChanger={false}
                 onChange={pageonchange}
                 defaultCurrent={1}
