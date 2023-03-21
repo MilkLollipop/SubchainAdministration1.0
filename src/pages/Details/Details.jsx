@@ -1,6 +1,7 @@
 import Details_ls from './Details.less';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'umi';
+import { saveAs } from 'file-saver';
 import {
   DownloadOutlined,
   CopyOutlined,
@@ -10,7 +11,8 @@ import {
   CheckCircleFilled,
   ExclamationCircleFilled,
 } from '@ant-design/icons';
-import { Genesisdata } from '../../api/request_data/overall_request';
+import useWallet from '@/hook/Wallet';
+import { update } from '../../api/request_data/overall_request';
 import { Popover, Modal } from 'antd';
 export default function Details(props) {
   const [see, setSee] = useState(1);
@@ -23,6 +25,17 @@ export default function Details(props) {
   const [label, setLabel] = useState();
   //子链Genesis获取
   const [genesistext, setGenesistext] = useState({});
+  const {
+    connectWallet,
+    connect,
+    disconnect,
+    signer,
+    address,
+    net,
+    provider,
+    showSelectWallet,
+    setShowSelectWallet,
+  } = useWallet();
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -55,6 +68,7 @@ export default function Details(props) {
   function seeonclick(data) {
     setSee(data);
   }
+
   const content = <div className={Details_ls.content}>More Information</div>;
   useEffect(() => {
     if (props.location.state) {
@@ -81,29 +95,62 @@ export default function Details(props) {
   }, [subchaindata]);
   //提交按钮
   function Confirm1() {
-    console.log(document.getElementById('Needinput1').value);
-    console.log(document.getElementById('Needinput2').value);
-    console.log(document.getElementById('Needinput3').value);
-    setJudgetext('Deploy Successfully');
-    setIsModalOpen(true);
+    let pd =
+      document.getElementById('Needinput1').value &&
+      document.getElementById('Needinput2').value &&
+      document.getElementById('Needinput3').value;
+    if (pd) {
+      console.log(document.getElementById('Needinput1').value);
+      console.log(document.getElementById('Needinput2').value);
+      console.log(document.getElementById('Needinput3').value);
+      subchaindata.offical_site = document.getElementById('Needinput1').value;
+      subchaindata.rpc = document.getElementById('Needinput2').value;
+      subchaindata.url = document.getElementById('Needinput3').value;
+      subchaindata.status = 1;
+      console.log(subchaindata);
+      update(subchaindata.id, subchaindata).then((item) => {
+        signer.sendTransaction(item).then(() => {
+          setJudgetext('Deploy Successfully');
+          setIsModalOpen(true);
+        });
+      });
+    }
   }
   //Running提交按钮
   function Confirm2() {
-    // console.log(document.getElementById('Runninginput1' || '').value);
-    // console.log(document.getElementById('Runninginput2' || '').value);
-    setJudgetext('Change Successfully');
-    setIsModalOpen(true);
+    if (document.getElementById('Runninginput1')) {
+      console.log(document.getElementById('Runninginput1').value);
+      subchaindata.offical_site =
+        document.getElementById('Runninginput1').value;
+    }
+    if (document.getElementById('Runninginput2')) {
+      console.log(document.getElementById('Runninginput2').value);
+      subchaindata.rpc = document.getElementById('Runninginput2').value;
+    }
+    update(subchaindata.id, subchaindata).then((item) => {
+      signer.sendTransaction(item).then(() => {
+        setJudgetext('Change Successfully');
+        setIsModalOpen(true);
+      });
+    });
   }
   //Starting提交按钮
   function Confirm3() {
-    // if (document.getElementById('Startinginput1').value != null) {
-    //   console.log(document.getElementById('Startinginput1').value);
-    // }
-    // if (document.getElementById('Startinginput2').value != null) {
-    //   console.log(document.getElementById('Startinginput2').value);
-    // }
-    setJudgetext('Start Successfully');
-    setIsModalOpen(true);
+    if (document.getElementById('Startinginput1')) {
+      console.log(document.getElementById('Startinginput1').value);
+      subchaindata.offical_site =
+        document.getElementById('Startinginput1').value;
+    }
+    if (document.getElementById('Startinginput2')) {
+      console.log(document.getElementById('Startinginput2').value);
+      subchaindata.rpc = document.getElementById('Startinginput2').value;
+    }
+    update(subchaindata.id, subchaindata).then((item) => {
+      signer.sendTransaction(item).then(() => {
+        setJudgetext('Start Successfully');
+        setIsModalOpen(true);
+      });
+    });
   }
   return (
     <div id="details">
@@ -153,17 +200,17 @@ export default function Details(props) {
               <p>Volume:</p>
             </div>
             <div className={Details_ls.textBox_text}>
-              <p>111</p>
+              <p>{subchaindata.id}</p>
               <p>
                 <span className={Details_ls.textBox_textimg}>
-                  {/* <img src={subchaindata.icon_path} /> */}
+                  <img src={subchaindata.icon} />
                 </span>
-                222
+                {subchaindata.name}
               </p>
-              <p>333</p>
-              <p>444</p>
-              <p>555</p>
-              <p>$ 666</p>
+              <p>{subchaindata.user || '-'}</p>
+              <p>{subchaindata.create_time || '-'}</p>
+              <p>{subchaindata.price}</p>
+              <p>{subchaindata.volume}</p>
             </div>
           </div>
           <div className={Details_ls.textBox_data}>
@@ -220,7 +267,15 @@ export default function Details(props) {
                     </Popover>
                   )}
                 </span>
-                <div className={Details_ls.download}>
+                <div
+                  className={Details_ls.download}
+                  onClick={() => {
+                    const blob = new Blob([`${subchaindata.genesis}`], {
+                      type: 'application/json;charset=UTF-8',
+                    });
+                    saveAs(blob, 'GenesisData.json');
+                  }}
+                >
                   <span>
                     <DownloadOutlined />
                   </span>
@@ -235,7 +290,7 @@ export default function Details(props) {
                   <div>
                     <pre>
                       <code style={{ color: '#000000' }}>
-                        {JSON.stringify(genesistext, null, ' ')}
+                        {JSON.stringify(subchaindata.genesis, null, ' ')}
                       </code>
                     </pre>
                   </div>
@@ -254,7 +309,7 @@ export default function Details(props) {
                         Details_ls.textBox_data_informationbox_h3_data4
                       }
                     >
-                      Need Deployment
+                      {subchaindata.offical_site}
                     </div>
                   </div>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
@@ -268,7 +323,7 @@ export default function Details(props) {
                         Details_ls.textBox_data_informationbox_h3_data4
                       }
                     >
-                      Need Deployment
+                      {subchaindata.rpc}
                     </div>
                   </div>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
@@ -282,7 +337,7 @@ export default function Details(props) {
                         Details_ls.textBox_data_informationbox_h3_data4
                       }
                     >
-                      Need Deployment
+                      {subchaindata.url}
                     </div>
                   </div>
                   <Link
@@ -317,7 +372,7 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_name}
                     >
-                      Json-RPC
+                      <span>* </span>Json-RPC
                     </div>
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
@@ -336,7 +391,7 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_name}
                     >
-                      Docker URL Name
+                      <span>* </span>Docker URL Name
                     </div>
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
@@ -372,7 +427,7 @@ export default function Details(props) {
                     >
                       {bj == 0 ? (
                         <>
-                          http://wwwdgfdgfggfs.com
+                          {subchaindata.offical_site}
                           <span
                             onClick={() => {
                               setBj(1);
@@ -397,14 +452,14 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_name}
                     >
-                      Json-RPC
+                      <span>* </span>Json-RPC
                     </div>
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
                       {bj2 == 0 ? (
                         <>
-                          http://wwwdgfdgfggfs.com
+                          {subchaindata.rpc}
                           <span
                             onClick={() => {
                               setBj2(1);
@@ -429,12 +484,12 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_name}
                     >
-                      Docker URL Name
+                      <span>* </span>Docker URL Name
                     </div>
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
-                      Please Enter
+                      {subchaindata.url}
                     </div>
                   </div>
                   <div
@@ -459,7 +514,7 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
-                      {subchaindata.official_site}
+                      {subchaindata.offical_site}
                     </div>
                   </div>
                   <div className={Details_ls.textBox_data_informationbox_h3}>
@@ -506,7 +561,7 @@ export default function Details(props) {
                     >
                       {bj == 0 ? (
                         <>
-                          http://wwwdgfdgfggfs.com
+                          {subchaindata.offical_site}
                           <span
                             onClick={() => {
                               setBj(1);
@@ -531,14 +586,14 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_name}
                     >
-                      Json-RPC
+                      <span>* </span>Json-RPC
                     </div>
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
                       {bj2 == 0 ? (
                         <>
-                          http://wwwdgfdgfggfs.com
+                          {subchaindata.rpc}
                           <span
                             onClick={() => {
                               setBj2(1);
@@ -563,12 +618,12 @@ export default function Details(props) {
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_name}
                     >
-                      Docker URL Name
+                      <span>* </span>Docker URL Name
                     </div>
                     <div
                       className={Details_ls.textBox_data_informationbox_h3_data}
                     >
-                      Please Enter
+                      {subchaindata.url}
                     </div>
                   </div>
                   <div

@@ -24,8 +24,10 @@
     "antd": "^5.1.7",
     "copy-to-clipboard": "^3.3.3",
     "ethers": "^5.4.7",
+    "file-saver": "^2.0.5",
     "identicon.js": "^2.3.3",
     "js-base64": "^3.7.5",
+    "moment": "^2.29.4",
     "pubsub-js": "^1.9.4",
     "react": "17.x",
     "react-dom": "17.x",
@@ -36,6 +38,7 @@
     "web3modal": "^1.9.4"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.5",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@umijs/preset-react": "1.x",

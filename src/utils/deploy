@@ -1,0 +1,39 @@
+#!/bin/bash
+
+run(){
+  mkdir .wormholes
+  ./wormholes --datadir ./.wormholes init genesis
+  ./wormholes --datadir ./.wormholes --networkid $1 --mine  --miner.threads 1 --syncmode=full --verbosity 5 >/dev/null 2>&1 &
+}
+
+run2(){
+  mkdir .wormholes
+  ./wormholes --datadir ./.wormholes init genesis
+  ./wormholes --datadir ./.wormholes --networkid $1 --mine --enode $2 --miner.threads 1 --syncmode=full --verbosity 5 >/dev/null 2>&1 &
+}
+
+getChainId(){
+  rs=`cat genesis`
+  echo $(jsonTool $rs "chainId")
+}
+
+getNode(){
+  nodeInfo=$(curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}' $1:8545 2>/dev/null &)
+  echo $(jsonTool $nodeInfo "enode")
+}
+
+jsonTool(){
+    echo "${1//\"/}"|sed "s/.*$2:\([^,}]*\).*/\1/"
+}
+
+main(){
+  echo "if not first please input the fisrt node ip"
+  chainId=$(getChainId)
+  if [[ $# -gt 0 ]];then
+    e=$(getNode $1)
+    run2 $chainId $e
+  fi
+  run $chainId
+}
+
+main "$@"

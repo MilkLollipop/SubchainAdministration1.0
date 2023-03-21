@@ -20,6 +20,14 @@ export default defineConfig({
         { path: '/', component: './HomePage/HomePage.jsx' },
         { path: '/Details', component: './Details/Details.jsx' },
         { path: '/Submit', component: './Submit/Submit.jsx' },
+        {
+          path: '/PrivacyNotice',
+          component: './PrivacyNotice/PrivacyNotice.jsx',
+        },
+        {
+          path: '/TermsOfService',
+          component: './TermsOfService/TermsOfService.jsx',
+        },
       ],
     },
   ],

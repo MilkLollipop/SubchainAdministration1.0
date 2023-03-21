@@ -10,26 +10,31 @@ import {
   ExportOutlined,
   DownloadOutlined,
 } from '@ant-design/icons';
+import { saveAs } from 'file-saver';
 import indentData from '@/utils/myIdent';
 import { ellipsis64 } from '../../utils/methods/Methods';
 import { signMessage } from '@/hook/wallet1';
 import { ToastContainer, toast } from 'react-toastify';
 import PubSub, { publish } from 'pubsub-js';
 import copy from 'copy-to-clipboard';
-import { setAccount, getChains } from '../../api/request_data/overall_request';
+import {
+  setAccount,
+  getChains,
+  da,
+} from '../../api/request_data/overall_request';
 const crypto = require('crypto');
 export default function Header(props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // 账户地址
   const [accountaddress, setAccountaddress] = useState();
   //登录状态
-  const [loginstatus, setLoginstatus] = useState(false);
+  const [loginstatus, setLoginstatus] = useState('false');
   const [addressblock, setAddressblock] = useState(0);
   const [smartcontractblock, setSmartcontractblock] = useState(0);
   //user_signer
   const [usersigner, setUsersigner] = useState({});
   //余额
-  const [balancedata, setBalancedata] = useState({});
+  const [balancedata, setBalancedata] = useState();
   //登录login
   const [signinlogin, setSigninlogin] = useState({});
   //wor  sig
@@ -53,6 +58,7 @@ export default function Header(props) {
   } = useWallet();
 
   const login = async (type) => {
+    console.log(type);
     if (type === 'worm') {
       localStorage.setItem('whatwallet', 'true');
     } else {
@@ -190,14 +196,32 @@ export default function Header(props) {
 
   useEffect(() => {
     if (accountaddress) {
-      setLoginstatus(true);
-      PubSub.publish('login_status', true);
+      setLoginstatus('true');
+      PubSub.publish('login_status', 'true');
+      localStorage.setItem('login_status', 'true');
     } else {
-      PubSub.publish('login_status', false);
+      PubSub.publish('login_status', 'false');
+      localStorage.setItem('login_status', 'false');
     }
     setAccount(accountaddress);
     getChains();
   }, [accountaddress]);
+  const sigblan = async () => {
+    console.log(signer);
+    const data = await signer.getBalance();
+    console.log(data);
+
+    setBalancedata(Number(utils.formatEther(data.toString())).toFixed(2));
+    localStorage.setItem(
+      'Account_Balance',
+      Number(utils.formatEther(data.toString())).toFixed(2),
+    );
+  };
+  useEffect(() => {
+    if (signer) {
+      sigblan();
+    }
+  }, [signer]);
   // MetaMask登录
   function MetaMaskSignIn() {
     setIsModalOpen(false);
@@ -233,11 +257,11 @@ export default function Header(props) {
       logOut();
       localStorage.removeItem('whatwallet');
       localStorage.removeItem('user_addr');
-      setLoginstatus(false);
+      setLoginstatus('false');
     } else {
       localStorage.removeItem('whatwallet');
       localStorage.removeItem('user_addr');
-      setLoginstatus(false);
+      setLoginstatus('false');
       setAccountaddress('');
       props.props.history.push('/');
     }
@@ -270,7 +294,7 @@ export default function Header(props) {
         <div className={Header_ls.Modal_namebox}>
           <div onClick={MetaMaskSignIn}>
             <img src={require('../../assets/images/Header/Slice 10.png')} />
-            <span>Metamask</span>
+            <span>MetaMask</span>
           </div>
           <div onClick={WormWalletSignIn}>
             <img src={require('../../assets/images/Header/Slice 11.png')} />
@@ -279,10 +303,27 @@ export default function Header(props) {
         </div>
         <p className={Header_ls.Modaltitle_p}>
           Connecting to the wallet means you agree with Wormholes{' '}
-          <span>Term of Use</span>and<span>Pravicy Policy</span>
+          <Link
+            to={{ pathname: '/TermsOfService', state: '' }}
+            className={Header_ls.Modaltitle_p_link}
+            onClick={() => {
+              setIsModalOpen(false);
+            }}
+          >
+            Terms of Service
+          </Link>
+          &nbsp; and &nbsp;
+          <Link
+            to={{ pathname: '/PrivacyNotice', state: '' }}
+            className={Header_ls.Modaltitle_p_link}
+            onClick={() => {
+              setIsModalOpen(false);
+            }}
+          >
+            Privacy Notice
+          </Link>
         </p>
       </Modal>
-
       <div className={Header_ls.HeaderBox}>
         <div className={Header_ls.center}>
           <Link to={{ pathname: '/', state: '' }}>
@@ -291,7 +332,7 @@ export default function Header(props) {
               src={require('../../assets/images/Header/Group 249.png')}
             />
           </Link>
-          {loginstatus == false ? (
+          {loginstatus == 'false' ? (
             <div
               className={Header_ls.Signbox}
               onClick={() => {
@@ -309,14 +350,21 @@ export default function Header(props) {
                 Smart contract
                 {smartcontractblock == 1 ? (
                   <div className={Header_ls.loginBox_block}>
-                    <p></p>
+                    <p>
+                      {ellipsis64('0xFB7d285519A5A377e6c235ad816Ef91f82AabbEd')}
+                    </p>
                     <div>
-                      <span>
+                      <span
+                        onClick={copyonclick.bind(
+                          this,
+                          '0xFB7d285519A5A377e6c235ad816Ef91f82AabbEd',
+                        )}
+                      >
                         <CopyOutlined />
                       </span>
                       <span
                         onClick={() => {
-                          window.open('http://192.168.1.237:8081/v2/contract');
+                          saveAs('./layers.sol', 'layers.sol');
                         }}
                       >
                         <DownloadOutlined />
@@ -368,8 +416,8 @@ export default function Header(props) {
                       </div>
                     </div>
                     <div className={Header_ls.loginBox_addressBox_data_t}>
-                      <p>ERB</p>
-                      <span>$</span>
+                      <p>ERB {balancedata}</p>
+                      <span>$ {balancedata}</span>
                     </div>
                   </div>
                 ) : (

@@ -90,3 +90,42 @@ export function ellipsisthree(data) {
     return data.slice(0, 3) + '...' + data.slice(data.length - 3, data.length);
   }
 }
+
+export function timeup(data) {
+  let text = [];
+  for (let i = 0; i < data.length; i++) {
+    text.push(data[i]);
+  }
+  for (let g = 0; g < text.length - 1; g++) {
+    for (let h = 0; h < text.length - 1; h++) {
+      if (text[h].create_time > text[h + 1].create_time) {
+        [text[h], text[h + 1]] = [text[h + 1], text[h]];
+      }
+    }
+  }
+  return text;
+}
+export function timedown(data) {
+  let text = [];
+  for (let i = 0; i < data.length; i++) {
+    text.push(data[i]);
+  }
+  for (let g = 0; g < text.length - 1; g++) {
+    for (let h = 0; h < text.length - 1; h++) {
+      if (text[h].create_time < text[h + 1].create_time) {
+        [text[h], text[h + 1]] = [text[h + 1], text[h]];
+      }
+    }
+  }
+  return text;
+}
+
+export function statesx(data, math) {
+  let text = [];
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].status == math) {
+      text.push(data[i]);
+    }
+  }
+  return text;
+}

@@ -27,11 +27,10 @@ const useWallet = () => {
   // const dispatch = useDispatch();
   async function addNetwork(raw) {
     console.log('changeNetwork');
-    if (localStorage.getItem('WormWallet') == 'metamask') {
+    if (localStorage.getItem('whatwallet') == 'MetaMask') {
       let net;
       if (raw.chainId) {
         if (parseInt(raw.chainId) == 51888) {
-          // if (parseInt(raw.chainId) == 51895) {
           net = 'wormholes';
         } else {
           net = '';
@@ -40,43 +39,27 @@ const useWallet = () => {
         net = '';
       }
       try {
+        console.log(222);
         await ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [
             {
               chainId: '0xCAB0',
-              // chainId: '0xCAB7',
               chainName: 'Wormholes',
               nativeCurrency: {
                 name: 'ERB',
                 symbol: 'ERB',
                 decimals: 18,
               },
-              rpcUrls: ['https://api.wormholes.com'],
+              rpcUrls: ['https://api.wormholestest.com'],
               blockExplorerUrls: ['https://www.wormholesscan.com/#/'],
             },
           ],
         });
         console.log('changeNetwork done');
-        // const provider = new ethers.providers.Web3Provider(raw);
-        // const signer = provider ? provider.getSigner() : null;
-        // const address = (await signer.getAddress()).toLowerCase();
         console.log(address);
         console.log(signer);
         console.log(provider);
-        // dispatch({
-        //   type: 'userModel/setUserAddr',
-        //   payload: address,
-        // });
-        // dispatch({
-        //   type: 'userModel/setUserSig',
-        //   payload: signer,
-        // });
-        // dispatch({
-        //   type: 'userModel/setProvider',
-        //   payload: provider,
-        // });
-        // setWallet({ raw, net, signer, address, provider });
       } catch (error) {
         console.log(error);
         info();
@@ -106,15 +89,11 @@ const useWallet = () => {
     });
   };
   const setRaw = async (raw) => {
-    // console.log('setRaw',window.ethereum);
     if (raw) {
       console.log('setRaw', raw.chainId);
-      // console.log('setRaw', raw.chainId, eval(raw.chainId).toString(16));
-      // const net = parseInt(raw.chainId) === 20211209 ? 'wormholes' : '';
       let net;
       if (raw.chainId) {
         if (parseInt(raw.chainId) == 51888) {
-          // if (parseInt(raw.chainId) == 51895) {
           net = 'wormholes';
         } else {
           net = '';
@@ -122,11 +101,9 @@ const useWallet = () => {
       } else {
         net = '';
       }
-
-      // const net = parseInt(raw.chainId) === 4 ? 'wormholes' : '';
       console.log(net);
       if (net === '') {
-        if (localStorage.getItem('WormWallet') == 'metamask') {
+        if (localStorage.getItem('whatwallet') == 'MetaMask') {
           addNetwork(raw);
         } else {
           const provider = new ethers.providers.Web3Provider(raw);
@@ -150,6 +127,7 @@ const useWallet = () => {
           setWallet({ raw, net, signer, address, provider });
         }
       } else {
+        console.log(raw);
         const provider = net ? new ethers.providers.Web3Provider(raw) : null;
         const signer = provider ? provider.getSigner() : null;
         const address = (await signer.getAddress()).toLowerCase();
@@ -177,7 +155,7 @@ const useWallet = () => {
   };
 
   const disconnect = async () => {
-    if (localStorage.getItem('WormWallet') === 'true') {
+    if (localStorage.getItem('whatwallet') === 'true') {
       // let raws = await web3Modal.connectTo('wormholeswallet');
       console.log('CLICK DISCONNECT');
       if (window.myKey) {
@@ -199,7 +177,7 @@ const useWallet = () => {
           return {};
         });
       }
-      localStorage.setItem('WormWallet', 'false');
+      localStorage.setItem('whatwallet', 'false');
     } else {
       console.log('CLICK DISCONNECT');
       if (window.myKey) {
@@ -220,7 +198,7 @@ const useWallet = () => {
           return {};
         });
       }
-      localStorage.setItem('WormWallet', 'false');
+      localStorage.setItem('whatwallet', 'false');
     }
   };
 
@@ -229,9 +207,9 @@ const useWallet = () => {
       try {
         const net = 'wormholes';
         let signer = new ethers.Wallet(window.myKey);
-        // console.log('signer', signer);
+        console.log('signer', signer);
         const provider = new ethers.providers.JsonRpcProvider(
-          'http://api.wormholestest.com',
+          'https://api.wormholestest.com',
         );
         // console.log('provider', provider);
         signer = signer.connect(provider);
@@ -270,7 +248,7 @@ const useWallet = () => {
             raw.on('chainChanged', () => {
               console.log('chainChanged');
               setRaw(raw);
-              // addNetwork(raw)
+              addNetwork(raw);
             });
             raw.on('connect', () => {
               console.log('connect');
@@ -284,6 +262,7 @@ const useWallet = () => {
             });
             setRaw(raw);
           } else {
+            console.log(wallet.raw);
             console.log('=========', wallet.raw);
             wallet.raw.on('accountsChanged', (accounts) => {
               if (accounts.length === 0) {
@@ -294,7 +273,7 @@ const useWallet = () => {
             });
             wallet.raw.on('chainChanged', () => {
               setRaw(raw);
-              // addNetwork(raw)
+              addNetwork(raw);
             });
             wallet.raw.on('connect', () => {
               setRaw(raw);
@@ -342,12 +321,12 @@ const useWallet = () => {
     setWallet({ net: chainID, signer, address, provider });
   };
   useEffect(() => {
-    // if (localStorage.getItem('WormWallet') === 'true') {
-    //   console.log('WormWallet', window.location.search);
+    // if (localStorage.getItem('whatwallet') === 'true') {
+    //   console.log('whatwallet', window.location.search);
     //   let searchParams = new URLSearchParams(window.location.search);
-    //   console.log('WormWallet', searchParams);
+    //   console.log('whatwallet', searchParams);
     // }
-    if (localStorage.getItem('WormWallet') === 'true') {
+    if (localStorage.getItem('whatwallet') === 'true') {
       let signer;
       signer = {
         _isSigner: true,
